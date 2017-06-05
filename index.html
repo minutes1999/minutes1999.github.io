@@ -1,90 +1,98 @@
-<h1>使用shadowsocks<strong>【影梭】</strong>构建个人VPS翻墙服务器的配置及优化</h1>    -2017-5-18
-&emsb;楼主因为个人习惯喜欢google，但苦于长城的困扰，绞尽脑汁去科学上网，曾经使用VPN，后转而自己构建VPS科学上网。鉴于网上有些教程对于现在不适用，于是整理了一下。
-【注：如有错误谢谢各位指正，感激不尽！有任何问题可留言[虽然现在还没设置留言功能]。】
-<h3>了解大致内容：</h3>
-<h5>简单来说，VPS就是外地的一台计算机，比如地址选在美国旧金山，就相当于把一台电脑放在了旧金山，再通过shadow socks代理以达到访问Google的目的。
-【注：VPS：虚拟专用服务器（Virtual private server），将一台服务器分区成多个虚拟专享服务器的服务。在容器或虚拟机中，每个VPS都可分配独立公网IP地址、独立操作系统、实现不同VPS间磁盘空间、内存、CPU资源、进程和系统配置的隔离，为用户和应用程序模拟出“独占”使用计算资源的体验。----摘自维基百科】
-【注：VPS是付费的，租用】
-  【SS 的作者是 Clowwindy，中国人，貌似就职于知乎，在2015 年被警察请去喝茶】</h5>
-<h2>VPS的优点：</h2>
-最大的优点是稳定、高速，目前未出现掉线情况。
-<h2>总体过程：</h2>
-租一台境外的服务器，在境外服务器上安装shadow socks，在自己电脑上安装并配置shadow socks客户端，开始Google吧。
-<h2>需要准备的：</h2>
-Money
-shadow socks客户端【https://shadowsocks.org/en/download/clients.html 附客户端官方下载地址】
-【注：shadow socks服务端会使用代码进行安装，无需自行下载】
-Xshell（Xshell是款远程连接软件，跟虚拟机本身基本没关系，是一个第三方软件，用来将你的代码传输到远程服务器上，在你这里虚拟机就是远程服务器）一般VPS服务商会有网页版的代码编辑软件，在这里选择第三方软件Xshell进行对服务器的配置，自行搜索下载】
-<h2>1、	VPS的选择：</h2>
-对于新手来说，
-○1digital ocean的最低5$/month【使用这个链接注册digital ocean会得到赠送的10$https://m.do.co/c/fa9742e2f039 https://www.digitalocean.com/ 附官网地址，好像这个官网也是需要科学上网的……】、
-○2搬瓦工的2.99$/month、19.99$/年、【https://bwh1.net/ 不知需不需要科学上网、支持alipay，有专为中国用户设计的线路https://bwh1.net/cart.php?a=confproduct&i=0 】
-○3vultr 最低2.5$/month（没使用过，有前辈推荐）
-2、	服务器的创建：
-以digital ocean为例
-（1）	注册账户之后 create droplet 创建一个服务器。
-选择Ubuntu或者Debian系统【在此Ubuntu64bit，64和32位也有区别】，不推荐对新手不友好的Centos，
-5$/月【ps：DO按小时计费，收费很灵活，在一个月内把服务器destroy也只会收取使用所产生的费用】
-地点：San Francisco  1、2均可
-Private ip和IPv6选中【这步有些不明白，会出现三个ip，我们使用的只有一个ip】
-SSH：这个是一个可以快速登陆的东西，自己不太懂就没弄，想使用的自行Google。
-名字：想改就改，不想改……
-最后：Create
-Creat之后，在你注册DO账户所使用的邮箱里会收到ip地址、root、root密码。一会有用。
-如下图：
-创建完成后DO界面如下：
-至此，创建服务器完成。
-3、	shadow socks服务端的安装，
-在此使用Xshell 5对服务器远程编译。
-下载安装Xshell【xshell和putty差不多，在Xshell进入远程服务器进行编译】
-点击新建
-左侧用户身份验证：
-输入邮箱内收到的root 密码。
-确认、连接。
-接受并保存
-输入现在的密码【即邮箱收到的root密码，输入时屏幕不会显示的，但是是输入了（这是在强制修改密码，为了安全）】
-【注：新密码必须要有字母大小写，符号，数字混合，不然不予通过，我输入的16位密码才成功】
-修改完后如上图，已登陆到远程服务器。【建议记好密码，因为实在太难记了……】
-接下来安装shadow socks服务端:
-将以下代码逐行粘贴到Xshell上,运行完成后再粘入下一行
-【在xshell里右键粘贴，ctrl+v不可使用（CTRL+U重新输入）】
-【以下命令均在最高权限用户 root 下运行,代码不包括（）】：
-(apt-get install python-pip)  
-(pip install shadowsocks)
-运行后如上图。【ps：若出现红色warning、not found，就是出错了，找出错误步骤自行Google】
-至此，shadow socks服务端安装完成。
-4、	配置shadow socks配置文件
-【输入 （cd ..）回到上一级文件】
-新建 配置文件：（vi /etc/shadowsocks.json）
-编辑配置文件，按 i 进入编辑，按 ESC 退出编辑，按 （:wq ）保存并退出：
-(vi /etc/shadowsocks.json)【注意以下的“”，不要忘记】
-（{
-    "server": "my_server_ip", // 这里输入邮箱收到的的 IP 地址
-    "server_port": ****, // 为了安全，可修改为大于 1024 并且未被占用的端口
-    "local_address": "127.0.0.1",//无需修改
-    "local_port": 1080, // 默认1080，也可修改，不过有时无法连接
-    "password": "mypassword", // 设置一个登陆密码，和qq密码性质差不多
-    "timeout": 300,
-    "method": "aes-256-cfb",//加密方式，默认aes-256-cfb，可自行修改
-    "fast_open": false
-}）
-按esc退出编辑，按（：wq）保存并退出，
+<h1>使用shadowsocks<strong>【影梭】</strong>构建个人VPS翻墙服务器的配置及优化</h1> <br>   -2017-5-18
+楼主因为个人习惯喜欢google，但苦于长城的困扰，绞尽脑汁去科学上网，曾经使用VPN，后转而自己构建VPS科学上网。鉴于网上有些教程对于现在不适用，于是整理了一下。<br>
+【注：如有错误谢谢各位指正，感激不尽！有任何问题可留言[虽然现在还没设置留言功能]。】<br>
+<hr>
+<h3>了解大致内容：</h3><br>
+<h5>简单来说，VPS就是外地的一台计算机，比如地址选在美国旧金山，就相当于把一台电脑放在了旧金山，再通过shadow socks代理以达到访问Google的目的。<br>
+【注：<br>
+  VPS：虚拟专用服务器（Virtual private server），将一台服务器分区成多个虚拟专享服务器的服务。<br>在容器或虚拟机中，每个VPS都可分配独立公网IP地址、独立操作系统、实现不同VPS间磁盘空间、内存、CPU资源、进程和系统配置的隔离，为用户和应用程序模拟出“独占”使用计算资源的体验。----摘自维基百科】<br>
+【注：VPS是付费的，租用】<br>
+  【SS 的作者是 Clowwindy，中国人，貌似就职于知乎，在2015 年被警察请去喝茶】</h5><br>
+<h2>VPS的优点：</h2><br>
+最大的优点是稳定、高速，目前未出现掉线情况。<br>
+<h2>总体过程：</h2><br>
+租一台境外的服务器，在境外服务器上安装shadow socks，在自己电脑上安装并配置shadow socks客户端，开始Google吧。<br>
+<h2>需要准备的：</h2><br>
+Money<br>
+shadow socks客户端【https://shadowsocks.org/en/download/clients.html 附客户端官方下载地址】<br>
+【注：shadow socks服务端会使用代码进行安装，无需自行下载】<br>
+Xshell（Xshell是款远程连接软件，跟虚拟机本身基本没关系，是一个第三方软件，用来将你的代码传输到远程服务器上，在你这里虚拟机就是远程服务器）一般VPS服务商会有网页版的代码编辑软件，在这里选择第三方软件Xshell进行对服务器的配置，自行搜索下载】<br>
+<hr>
+<h2>1、	VPS的选择：</h2><br>
+对于新手来说，<br>
+○1digital ocean的最低5$/month【使用这个链接注册digital ocean会得到赠送的10$https://m.do.co/c/fa9742e2f039 https://www.digitalocean.com/ 附官网地址，好像这个官网也是需要科学上网的……】<br>
+○2搬瓦工的2.99$/month、19.99$/年、【https://bwh1.net/ 不知需不需要科学上网、支持alipay，有专为中国用户设计的线路https://bwh1.net/cart.php?a=confproduct&i=0 】<br>
+○3vultr 最低2.5$/month（没使用过，有前辈推荐）<br>
+<hr>
+2、	服务器的创建：<br>
+以digital ocean为例<:br>
+注册账户之后 create droplet 创建一个服务器。<br>
+选择Ubuntu或者Debian系统【在此Ubuntu64bit，64和32位也有区别】，不推荐对新手不友好的Centos，<br>
+5$/月【ps：DO按小时计费，收费很灵活，在一个月内把服务器destroy也只会收取使用所产生的费用】<br>
+地点：San Francisco  1、2均可<br>
+Private ip和IPv6选中【这步有些不明白，会出现三个ip，我们使用的只有一个ip[邮箱中收到的那个ip]】<br>
+SSH：这个是一个可以快速登陆的东西，自己不太懂就没弄，想使用的自行Google。<br>
+名字：想改就改，不想改……<br>
+最后：Create<br>
+Creat之后，在你注册DO账户所使用的邮箱里会收到ip地址、root、root密码。<br>
+如下图：<br>
+创建完成后DO界面如下：<br>
+至此，创建服务器完成。<br><hr>
+3、	shadow socks服务端的安装，<br>
+在此使用Xshell 5对服务器远程编译。<br>
+下载安装Xshell【xshell和putty差不多，在Xshell进入远程服务器进行编译】<br>
+点击新建<br>
+左侧用户身份验证：<br>
+输入邮箱内收到的root 密码。<br>
+确认、连接。<br>
+接受并保存<br>
+输入现在的密码【即邮箱收到的root密码，输入时屏幕不会显示的，但是是输入了（这是在强制修改密码，为了安全）】<br>
+【注：新密码必须要有字母大小写，符号，数字混合，不然不予通过，我输入的16位密码才成功】<br>
+修改完后如上图，已登陆到远程服务器。【建议记好密码，因为实在太难记了……】<br>
+接下来安装shadow socks服务端:<br>
+将以下代码逐行粘贴到Xshell上,运行完成后再粘入下一行<br>
+【在xshell里右键粘贴，ctrl+v不可使用（CTRL+U重新输入）】<br>
+【以下命令均在最高权限用户 root 下运行,代码不包括（）】：<br>
+(apt-get install python-pip)  <br>
+(pip install shadowsocks)<br>
+运行后如上图。<br>【ps：若出现红色warning、not found，就是出错了，找出错误步骤自行Google】<br>
+至此，shadow socks服务端安装完成。<br>
+  <hr>
+4、	配置shadow socks配置文件<br>
+【输入 （cd ..）回到上一级文件】<br>
+新建 配置文件：
+  <br>（vi /etc/shadowsocks.json）<br>
+编辑配置文件，按 i 进入编辑，按 ESC 退出编辑，按 （:wq ）保存并退出：<br>
+(vi /etc/shadowsocks.json)【注意以下的“”，不要忘记】<br>
+（{<br>
+    "server": "my_server_ip", // 这里输入邮箱收到的的 IP 地址<br>
+    "server_port": ****, // 为了安全，可修改为大于 1024 并且未被占用的端口<br>
+    "local_address": "127.0.0.1",//无需修改<br>
+    "local_port": 1080, // 默认1080，也可修改，不过有时无法连接<br>
+    "password": "mypassword", // 设置一个登陆密码，和qq密码性质差不多<br>
+    "timeout": 300, //多长时间连接超时<br>
+    "method": "aes-256-cfb",//加密方式，默认aes-256-cfb，可自行修改<br>
+    "fast_open": false<br>
+}）<br>
+按esc退出编辑，按（：wq）保存并退出，<br>
  
-启动shadow socks，
-（ssserver -c /etc/shadowsocks.json -d start）
-说明：ssserver 是 SS 的服务端命令。-c 表示以配置文件的方式运行 SS， -d 表示在后台运行，这样允许用户进行其他操作。start 就是启动。
+启动shadow socks，<br>
+（ssserver -c /etc/shadowsocks.json -d start）<br>
+说明：ssserver 是 SS 的服务端命令。-c 表示以配置文件的方式运行 SS， -d 表示在后台运行，这样允许用户进行其他操作。start 就是启动。<br>
  
-停止 SS 服务端：
-（ssserver -c /etc/shadowsocks.json -d stop）
-说明：把 start 换成 stop,至此shadowsocks服务端全部完成
-5、	shadow socks客户端的配置：
-  下载安装shadow socks客户端后，打开.exe文件
+停止 SS 服务端：<br>
+（ssserver -c /etc/shadowsocks.json -d stop）<br>
+说明：把 start 换成 stop,至此shadowsocks服务端全部完成<br>
+  <hr>
+5、	shadow socks客户端的配置：<br>
+  下载安装shadow socks客户端后，打开.exe文件<br>
  
-输入服务器的地址，服务器的端口，密码（此密码不是root的密码，是shadow socks服务端的密码）
-加密默认aes-256-cfb【可自行修改，自行Google】
-代理端口默认1080的【修改的话要使用非占用端口，自行Google】
+输入服务器的地址，服务器的端口，密码（此密码不是root的密码，是shadow socks服务端的密码）<br>
+加密默认aes-256-cfb【可自行修改，自行Google】<br>
+代理端口默认1080的【修改的话要使用非占用端口，自行Google】<br>
  
-小飞机就是shadow socks客户端，
-启用系统代理，有pac模式和全局模式，全局模式是此电脑所有上网均经过ss代理。
-开始Google吧！！！【其他VPS商家过程基本一样】【PS：一般VPS网速较慢，后续推出优化教程】
- 
+小飞机就是shadow socks客户端，<br>
+启用系统代理，有pac模式和全局模式，全局模式是此电脑所有上网均经过ss代理。<br>
+开始Google吧！！！【其他VPS商家过程基本一样】<br>
+  【PS：一般VPS网速较慢，后续推出优化教程】<br>
+  <strong>END</strong>
