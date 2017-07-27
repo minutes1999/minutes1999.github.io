@@ -1,6 +1,6 @@
 ## Welcome to GitHub Pages
 
-##nece to meet you!
+nice to meet you!
 
 You can use the [editor on GitHub](https://github.com/minutes1999/minutes1999.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
